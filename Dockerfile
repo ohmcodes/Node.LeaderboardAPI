@@ -1,6 +1,9 @@
 # Use the official Node.js image
 FROM node:18-alpine
 
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
+
 # Set the working directory
 WORKDIR /app
 
@@ -12,6 +15,9 @@ RUN npm install
 
 # Copy the rest of the application code
 COPY . .
+
+# Generate Prisma client
+RUN npx prisma generate
 
 # Expose the port the app runs on
 EXPOSE 3010
