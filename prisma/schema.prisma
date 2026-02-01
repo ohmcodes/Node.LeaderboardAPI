@@ -12,5 +12,5 @@ datasource db {
 
 model Leaderboard {
   id    String @id
-  score Int
+  score Float
 }
