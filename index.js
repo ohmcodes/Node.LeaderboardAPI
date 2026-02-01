@@ -4,19 +4,32 @@ const { PrismaClient } = require('@prisma/client');
 const app = express();
 const prisma = new PrismaClient();
 
+const randomNames = [
+  'JumpMaster', 'CoinCollector', 'PlatformHero', 'LevelJumper', 'StarSeeker', 'PipeSurfer', 'BlockBuster', 'FlagGetter', 'MushroomMage', 'FireFlower',
+  'SuperRunner', 'CloudLeaper', 'CastleConqueror', 'KoopaKiller', 'YoshiRider', 'WarpWhiz', 'PowerUpPro', 'ShellShocker', 'BowserBeater', 'PrincessSaver',
+  'AdventureAce', 'QuestQuasher', 'DungeonDiver', 'TreasureHunter', 'GemGrabber', 'KeyKeeper', 'DoorDasher', 'SecretSeeker', 'BossBuster', 'FinalFighter',
+  'SpeedSprinter', 'AgileJumper', 'GravityGuru', 'BounceBuddy', 'SwingMaster', 'ClimbKing', 'SlidePro', 'DashDemon', 'FlipFlopper', 'TwistTurner',
+  'PixelPioneer', 'RetroRunner', 'ArcadeAce', 'GameGuru', 'LevelLord', 'ScoreSmasher', 'HighFlyer', 'LowCrawler', 'SideScroller', 'VerticalVoyager',
+  'EpicExplorer', 'LegendaryLeaper', 'MythicMover', 'HeroicHopper', 'BraveBounder', 'CourageousClimber', 'DaringDasher', 'FearlessFlyer', 'GallantGamer',
+  'IntrepidJumper', 'ValiantVault', 'BoldBouncer', 'StalwartSprinter', 'ResoluteRunner', 'TenaciousTurner', 'UnwaveringWarrior', 'VigilantVoyager', 'ZealousZoomer'
+];
+
 app.use(express.json());
 
 // POST /score - post id and score
 app.post('/score', async (req, res) => {
-  const { id, score } = req.body;
+  let { id, score, playername } = req.body;
   if (!id || typeof score !== 'number') {
     return res.status(400).json({ error: 'Invalid id or score' });
+  }
+  if (!playername) {
+    playername = randomNames[Math.floor(Math.random() * randomNames.length)];
   }
   try {
     const entry = await prisma.leaderboard.upsert({
       where: { id },
-      update: { score },
-      create: { id, score }
+      update: { score, playername },
+      create: { id, score, playername }
     });
     res.json(entry);
   } catch (error) {
