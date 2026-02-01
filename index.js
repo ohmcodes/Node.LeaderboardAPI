@@ -31,16 +31,23 @@ app.post('/score', async (req, res) => {
     let entry;
     if (existing) {
       // Update existing
-      const updateData = { score };
+      const updateData = {};
+      if (score > existing.score) {
+        updateData.score = score;
+      }
       if (playername) {
         updateData.playername = playername;
       } else if (!existing.playername) {
         updateData.playername = randomNames[Math.floor(Math.random() * randomNames.length)];
       }
-      entry = await prisma.leaderboard.update({
-        where: { id },
-        data: updateData
-      });
+      if (Object.keys(updateData).length > 0) {
+        entry = await prisma.leaderboard.update({
+          where: { id },
+          data: updateData
+        });
+      } else {
+        entry = existing; // No update needed
+      }
     } else {
       // Create new
       if (!playername) {
