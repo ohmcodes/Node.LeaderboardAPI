@@ -16,21 +16,40 @@ const randomNames = [
 
 app.use(express.json());
 
+app.use(express.static('public'));
+
 // POST /score - post id and score
 app.post('/score', async (req, res) => {
   let { id, score, playername } = req.body;
   if (!id || typeof score !== 'number') {
     return res.status(400).json({ error: 'Invalid id or score' });
   }
-  if (!playername) {
-    playername = randomNames[Math.floor(Math.random() * randomNames.length)];
-  }
   try {
-    const entry = await prisma.leaderboard.upsert({
-      where: { id },
-      update: { score, playername },
-      create: { id, score, playername }
+    const existing = await prisma.leaderboard.findUnique({
+      where: { id }
     });
+    let entry;
+    if (existing) {
+      // Update existing
+      const updateData = { score };
+      if (playername) {
+        updateData.playername = playername;
+      } else if (!existing.playername) {
+        updateData.playername = randomNames[Math.floor(Math.random() * randomNames.length)];
+      }
+      entry = await prisma.leaderboard.update({
+        where: { id },
+        data: updateData
+      });
+    } else {
+      // Create new
+      if (!playername) {
+        playername = randomNames[Math.floor(Math.random() * randomNames.length)];
+      }
+      entry = await prisma.leaderboard.create({
+        data: { id, score, playername }
+      });
+    }
     res.json(entry);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -61,6 +80,23 @@ app.get('/top10', async (req, res) => {
       take: 10
     });
     res.json(top10);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /list - serve the leaderboard UI
+app.get('/list', (req, res) => {
+  res.sendFile(__dirname + '/public/list.html');
+});
+
+// GET /api/list - get all players JSON
+app.get('/api/list', async (req, res) => {
+  try {
+    const allPlayers = await prisma.leaderboard.findMany({
+      orderBy: { score: 'desc' }
+    });
+    res.json(allPlayers);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
