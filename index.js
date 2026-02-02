@@ -109,6 +109,30 @@ app.get('/api/list', async (req, res) => {
   }
 });
 
+// GET /rank/:id - get player's rank
+app.get('/rank/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const player = await prisma.leaderboard.findUnique({
+      where: { id }
+    });
+    if (!player) {
+      return res.status(404).json({ error: 'Player not found' });
+    }
+    const higherCount = await prisma.leaderboard.count({
+      where: {
+        score: {
+          gt: player.score
+        }
+      }
+    });
+    const rank = higherCount + 1;
+    res.json({ id: player.id, playername: player.playername, score: player.score, rank });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
