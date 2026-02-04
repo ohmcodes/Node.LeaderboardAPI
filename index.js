@@ -133,6 +133,27 @@ app.get('/rank/:id', async (req, res) => {
   }
 });
 
+// PUT /player/:id/name - update player name
+app.put('/player/:id/name', async (req, res) => {
+  const { id } = req.params;
+  const { playername } = req.body;
+  if (!playername) {
+    return res.status(400).json({ error: 'Playername is required' });
+  }
+  try {
+    const updatedPlayer = await prisma.leaderboard.update({
+      where: { id },
+      data: { playername }
+    });
+    res.json(updatedPlayer);
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Player not found' });
+    }
+    res.status(500).json({ error: error.message });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
