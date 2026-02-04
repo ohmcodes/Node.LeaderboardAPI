@@ -1,5 +1,6 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
+const cors = require('cors');
 
 const app = express();
 const prisma = new PrismaClient();
@@ -14,6 +15,7 @@ const randomNames = [
   'IntrepidJumper', 'ValiantVault', 'BoldBouncer', 'StalwartSprinter', 'ResoluteRunner', 'TenaciousTurner', 'UnwaveringWarrior', 'VigilantVoyager', 'ZealousZoomer'
 ];
 
+app.use(cors());
 app.use(express.json());
 
 app.use(express.static('public'));
